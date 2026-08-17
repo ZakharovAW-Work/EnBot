@@ -11,7 +11,12 @@ router = Router()
 START_PHRASES = {"начать", "урок", "занятие", "start"}
 
 class AddWord(StatesGroup):
+    wait_en = State()
     wait_ru = State()
+
+async def start_add_word(message: Message, state):
+    await state.set_state(AddWord.wait_en)
+    await message.answer("Какое слово добавить в словарь?")
 
 @router.message(CommandStart())
 async def on_start(msg: Message):
@@ -24,15 +29,35 @@ async def session_choice(cq: CallbackQuery, state):
     await cq.answer()
     if mode == "stop":
         await state.clear(); await cq.message.answer("Сессия завершена ✅"); return
+    if mode == "add_word":
+        await state.clear()
+        await start_add_word(cq.message, state)
+        return
     if mode == "cards": await start_cards(cq.message, state, cq.from_user.id)
     else:               await start_dialog(cq.message, state, cq.from_user.id)
 
 @router.message(Command("add"))   # /add cat
 async def add_cmd(msg: Message, state):
-    parts = msg.text.split(maxsplit=1)
-    if len(parts) < 2: await msg.answer("Формат: /add cat"); return
+    parts = msg.text.split(maxsplit=2)
+    if len(parts) < 2:
+        await start_add_word(msg, state)
+        return
+    if len(parts) == 2:
+        await state.set_state(AddWord.wait_ru)
+        await state.update_data(en=parts[1].strip().lower())
+        await msg.answer("Перевод на русский?")
+        return
+    en = parts[1].strip().lower()
+    ru = parts[2].strip()
+    await db.learn_word(msg.from_user.id, en, ru)
+    await state.clear()
+    await msg.answer(f"Слово <b>{en}</b> в словаре ✅")
+
+@router.message(AddWord.wait_en, F.text)
+async def add_en(msg: Message, state):
+    en = msg.text.strip().lower()
+    await state.update_data(en=en)
     await state.set_state(AddWord.wait_ru)
-    await state.update_data(en=parts[1].strip().lower())
     await msg.answer("Перевод на русский?")
 
 @router.message(AddWord.wait_ru, F.text)

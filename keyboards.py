@@ -8,7 +8,8 @@ def session_kb() -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(text="🃏 Карточки", callback_data="session:cards"),
                 InlineKeyboardButton(text="💬 Диалог", callback_data="session:dialog"),
-            ]
+            ],
+            [InlineKeyboardButton(text="➕ Добавить слово в словарь", callback_data="session:add_word")],
         ]
     )
 
