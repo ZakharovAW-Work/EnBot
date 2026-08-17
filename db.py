@@ -28,6 +28,12 @@ async def init():
     async with aiosqlite.connect(DB_PATH) as con:
         await con.executescript(SCHEMA); await con.commit()
 
+async def add_user_if_missing(chat_id):
+    async with aiosqlite.connect(DB_PATH) as con:
+        await con.execute(
+            "INSERT OR IGNORE INTO users (chat_id) VALUES (?)", (chat_id,))
+        await con.commit()
+
 async def learn_word(chat_id, en, ru, kind="noun"):
     async with aiosqlite.connect(DB_PATH) as con:
         cur = await con.execute(
