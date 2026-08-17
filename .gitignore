@@ -1,0 +1,9 @@
+.env
+<<<<<<< HEAD
+.venv
+py_log.log
+data/
+=======
+/.venv
+__pycache__
+>>>>>>> 7c8f8e824c5d1db25f7e2e51f3781d6c014acbc8
