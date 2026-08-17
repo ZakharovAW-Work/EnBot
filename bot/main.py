@@ -2,13 +2,19 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
-import config, db
+import db
 from scheduler import setup_scheduler
 from handlers import cards, dialog, common
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+TOKEN=os.getenv("TOKEN")
+
 async def main():
     await db.init()
-    bot = Bot(config.TOKEN, parse_mode="HTML")
+    bot = Bot(TOKEN, parse_mode="HTML")
     storage = MemoryStorage()                 # в продакшене — RedisStorage
     dp = Dispatcher(storage=storage)
 
